@@ -45,7 +45,10 @@ class AssetPlaybackManager: NSObject {
         didSet {
             playerItemObserver = playerItem?.observe(\AVPlayerItem.status, options: [.new, .initial]) { [weak self] (item, _) in
                 guard let strongSelf = self else { return }
-                
+                print("Status is :: ",item.status.rawValue,item.error)
+                item.errorLog()?.events.forEach({ event in
+                    print("Event is :: ",event.errorComment,event.errorStatusCode,event.uri)
+                })
                 if item.status == .readyToPlay {
                     if !strongSelf.readyForPlayback {
                         strongSelf.readyForPlayback = true
@@ -89,6 +92,18 @@ class AssetPlaybackManager: NSObject {
     
     override private init() {
         super.init()
+        NotificationCenter.default.addObserver(
+                            self,
+                            selector: #selector(newAccessLogEntered(notificationObj:)),
+                            name: NSNotification.Name.AVPlayerItemNewAccessLogEntry,
+                            object: nil
+                        )
+                        NotificationCenter.default.addObserver(
+                            self,
+                            selector: #selector(newErrorLogEntered(notificationObj:)),
+                            name: NSNotification.Name.AVPlayerItemNewErrorLogEntry,
+                            object: nil
+                        )
         playerObserver = player.observe(\AVPlayer.currentItem, options: [.new]) { [weak self] (player, _) in
             guard let strongSelf = self else { return }
             
@@ -97,6 +112,25 @@ class AssetPlaybackManager: NSObject {
         
         player.usesExternalPlaybackWhileExternalScreenIsActive = true
     }
+    
+    @objc
+        func newErrorLogEntered(notificationObj: Notification?) {
+            if let playerItem = notificationObj?.object as? AVPlayerItem {
+                playerItem.errorLog()?.events.forEach { event in
+                    print("Error lg :: ", event.errorComment, playerItem.error, event.uri)
+                }
+            }
+        }
+    
+        @objc
+        func newAccessLogEntered(notificationObj: Notification?) {
+            let playerItem = notificationObj?.object as? AVPlayerItem
+            if let events = playerItem?.accessLog()?.events {
+                for e in events.reversed() {
+                    print("Accesslog :: ", e.averageVideoBitrate, e.averageAudioBitrate)
+                }
+            }
+        }
     
     deinit {
         /// Remove any KVO observer.

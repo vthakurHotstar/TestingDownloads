@@ -120,6 +120,19 @@ class AssetListTableViewController: UITableViewController {
 //                if asset.stream.isProtected {
 //                    ContentKeyManager.shared.contentKeyDelegate.deleteAllPeristableContentKeys(forAsset: asset)
 //                }
+                
+                NotificationCenter.default.addObserver(
+                                    self,
+                                    selector: #selector(self.newAccessLogEntered(notificationObj:)),
+                                    name: NSNotification.Name.AVPlayerItemNewAccessLogEntry,
+                                    object: nil
+                                )
+                                NotificationCenter.default.addObserver(
+                                    self,
+                                    selector: #selector(self.newErrorLogEntered(notificationObj:)),
+                                    name: NSNotification.Name.AVPlayerItemNewErrorLogEntry,
+                                    object: nil
+                                )
                 let playerItem = AVPlayerItem(asset: asset.urlAsset)
                 let player = AVPlayer(playerItem: playerItem)
                 let playerViewController = AVPlayerViewController()
@@ -160,6 +173,26 @@ class AssetListTableViewController: UITableViewController {
         present(alertController, animated: true, completion: nil)
     }
 #endif
+    
+    @objc
+        func newErrorLogEntered(notificationObj: Notification?) {
+            if let playerItem = notificationObj?.object as? AVPlayerItem {
+                playerItem.errorLog()?.events.forEach { event in
+                    print("Error lg 1:: ", event.errorComment, playerItem.error, event.uri)
+                }
+            }
+        }
+    
+        @objc
+        func newAccessLogEntered(notificationObj: Notification?) {
+            let playerItem = notificationObj?.object as? AVPlayerItem
+            if let events = playerItem?.accessLog()?.events {
+                for e in events.reversed() {
+                    print("Accesslog 1:: ", e.averageVideoBitrate, e.averageAudioBitrate)
+                }
+            }
+        }
+    
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         super.prepare(for: segue, sender: sender)
