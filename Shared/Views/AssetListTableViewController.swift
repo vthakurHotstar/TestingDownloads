@@ -214,7 +214,7 @@ class AssetListTableViewController: UITableViewController {
             #endif
             
             // Load the new Asset to playback into AssetPlaybackManager.
-            //AssetPlaybackManager.sharedManager.setAssetForPlayback(asset)
+            AssetPlaybackManager.sharedManager.setAssetForPlayback(asset)
             
         }
     }
@@ -258,7 +258,7 @@ extension AssetListTableViewController: AssetListTableViewCellDelegate {
  */
 extension AssetListTableViewController: AssetPlaybackDelegate {
     func streamPlaybackManager(_ streamPlaybackManager: AssetPlaybackManager, playerReadyToPlay player: AVPlayer) {
-        //player.play()
+        player.play()
     }
     
     func streamPlaybackManager(_ streamPlaybackManager: AssetPlaybackManager, playerCurrentItemDidChange player: AVPlayer) {
